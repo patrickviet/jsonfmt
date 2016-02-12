@@ -1,0 +1,26 @@
+#!/usr/bin/env ruby
+
+# This is the Chef library uses. So we get the same format as a knife <something> -F json 
+require 'ffi_yajl'
+
+def err(msg)
+  puts "ERROR: #{msg}"
+  puts "usage: #{$0} <file1> [<file2>] [<file3>]"
+  exit 1
+end
+
+err "no file specified" unless ARGV.length > 0
+
+ARGV.each do |file|
+  content = File.read(file)
+  tmp = FFI_Yajl::Parser.parse content
+  newcontent = FFI_Yajl::Encoder.encode(tmp,{pretty: true})
+
+  if content == newcontent
+    puts "No need to reformat file #{file} - not doing anything"
+  else
+    puts "Update file #{file}"
+    File.write file, newcontent
+  end
+end
+  
