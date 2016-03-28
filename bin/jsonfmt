@@ -3,18 +3,22 @@
 # This is the Chef library uses. So we get the same format as a knife <something> -F json 
 require 'ffi_yajl'
 
-def err(msg)
+def err(msg,usage = true)
   puts "ERROR: #{msg}"
-  puts "usage: #{$0} <file1> [<file2>] [<file3>]"
+  puts "usage: #{$0} <file1> [<file2>] [<file3>]" if usage
   exit 1
 end
 
 err "no file specified" unless ARGV.length > 0
 
 ARGV.each do |file|
-  content = File.read(file)
-  tmp = FFI_Yajl::Parser.parse content
-  newcontent = FFI_Yajl::Encoder.encode(tmp,{pretty: true})
+  begin
+    content = File.read(file)
+    tmp = FFI_Yajl::Parser.parse content
+    newcontent = FFI_Yajl::Encoder.encode(tmp,{pretty: true})
+  rescue => e
+    err("While processing file #{file}: #{e.inspect}",false)
+  end
 
   if content == newcontent
     puts "No need to reformat file #{file} - not doing anything"
